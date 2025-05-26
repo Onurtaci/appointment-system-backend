@@ -1,0 +1,22 @@
+server:
+  port: 8080
+
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/clinic_db
+    username: clinic
+    password: clinic123
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+
+logging:
+  level:
+    com.clinic.appointmentsystem: DEBUG
+    org.springframework.security: DEBUG
+    org.springframework.web: DEBUG
+
+jwt:
+  secret: 6c242d4cbe0a4c7fa9c0b8e8920f8c7b0fb9c7c2f9a1d1e9c2e3a4f5b6c7d8e9   # örnek 64 haneli hex
+  expiration: 3600000        # 1 saat (ms)
