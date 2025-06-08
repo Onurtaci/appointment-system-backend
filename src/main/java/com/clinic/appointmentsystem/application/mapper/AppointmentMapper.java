@@ -3,7 +3,8 @@ package com.clinic.appointmentsystem.application.mapper;
 import com.clinic.appointmentsystem.application.dto.appointment.AppointmentDoctorView;
 import com.clinic.appointmentsystem.application.dto.appointment.AppointmentPatientView;
 import com.clinic.appointmentsystem.domain.entities.Appointment;
-import org.mapstruct.*;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 
 @Mapper(componentModel = "spring")
 public interface AppointmentMapper {

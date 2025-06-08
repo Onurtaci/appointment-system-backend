@@ -18,17 +18,17 @@ public interface DoctorScheduleRepository extends JpaRepository<DoctorSchedule, 
     List<DoctorSchedule> findAllWorkingDaysByDoctorId(@Param("doctorId") UUID doctorId);
 
     @Query("SELECT CASE WHEN COUNT(ds) > 0 THEN true ELSE false END FROM DoctorSchedule ds " +
-           "WHERE ds.doctor.id = :doctorId " +
-           "AND ds.dayOfWeek = :dayOfWeek " +
-           "AND ds.shiftType = 'FULL_DAY' " +
-           "AND ds.isWorkingDay = true " +
-           "AND ((ds.startTime <= :lunchBreakStart AND ds.endTime >= :lunchBreakStart) " +
-           "OR (ds.startTime <= :lunchBreakEnd AND ds.endTime >= :lunchBreakEnd) " +
-           "OR (ds.startTime >= :lunchBreakStart AND ds.endTime <= :lunchBreakEnd))")
+            "WHERE ds.doctor.id = :doctorId " +
+            "AND ds.dayOfWeek = :dayOfWeek " +
+            "AND ds.shiftType = 'FULL_DAY' " +
+            "AND ds.isWorkingDay = true " +
+            "AND ((ds.startTime <= :lunchBreakStart AND ds.endTime >= :lunchBreakStart) " +
+            "OR (ds.startTime <= :lunchBreakEnd AND ds.endTime >= :lunchBreakEnd) " +
+            "OR (ds.startTime >= :lunchBreakStart AND ds.endTime <= :lunchBreakEnd))")
     boolean existsByDoctorIdAndTimeRange(
-        @Param("doctorId") UUID doctorId,
-        @Param("dayOfWeek") DayOfWeek dayOfWeek,
-        @Param("lunchBreakStart") LocalTime lunchBreakStart,
-        @Param("lunchBreakEnd") LocalTime lunchBreakEnd
+            @Param("doctorId") UUID doctorId,
+            @Param("dayOfWeek") DayOfWeek dayOfWeek,
+            @Param("lunchBreakStart") LocalTime lunchBreakStart,
+            @Param("lunchBreakEnd") LocalTime lunchBreakEnd
     );
 } 

@@ -1,6 +1,8 @@
 package com.clinic.appointmentsystem.webapi.controllers;
 
-import com.clinic.appointmentsystem.application.dto.auth.*;
+import com.clinic.appointmentsystem.application.dto.auth.AuthResponse;
+import com.clinic.appointmentsystem.application.dto.auth.LoginRequest;
+import com.clinic.appointmentsystem.application.dto.auth.RegisterRequest;
 import com.clinic.appointmentsystem.application.dto.user.UserDto;
 import com.clinic.appointmentsystem.application.services.AuthService;
 import jakarta.validation.Valid;
