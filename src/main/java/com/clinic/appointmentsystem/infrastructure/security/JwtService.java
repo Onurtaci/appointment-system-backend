@@ -1,6 +1,9 @@
 package com.clinic.appointmentsystem.infrastructure.security;
 
-import io.jsonwebtoken.*;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jws;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -20,8 +23,8 @@ public class JwtService {
 
     public JwtService(@Value("${jwt.secret}") String secret,
                       @Value("${jwt.expiration}") long expMs) {
-        this.key = Keys.hmacShaKeyFor(secret.getBytes());
-        this.expirationMs = expMs;
+        key = Keys.hmacShaKeyFor(secret.getBytes());
+        expirationMs = expMs;
     }
 
     public String generateToken(UUID userId, String email, String role) {
@@ -35,7 +38,7 @@ public class JwtService {
                 .compact();
     }
 
-    public Jws<Claims> parse(String token) {
+    Jws<Claims> parse(String token) {
         return Jwts.parserBuilder()
                 .setSigningKey(key)
                 .build()

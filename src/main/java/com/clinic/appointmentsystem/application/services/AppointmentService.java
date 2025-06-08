@@ -20,7 +20,6 @@ import java.time.LocalTime;
 import java.util.List;
 import java.util.UUID;
 
-
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -34,29 +33,21 @@ public class AppointmentService {
     private final AppointmentMapper mapper;
     private final DoctorScheduleRepository scheduleRepo;
 
-    /* --- CREATE --- */
     public UUID create(CreateAppointmentRequest r) {
         if (r.appointmentTime().isBefore(LocalDateTime.now())) throw new IllegalArgumentException("APPT_PAST_DATE");
-        
-        // Check if the doctor works on this day
+
         DoctorSchedule schedule = scheduleRepo.findByDoctorIdAndDayOfWeek(r.doctorId(), r.appointmentTime().getDayOfWeek());
-        if (schedule == null || !schedule.isWorkingDay()) {
-            throw new IllegalArgumentException("DOCTOR_NOT_WORKING");
-        }
+        if (schedule == null || !schedule.isWorkingDay()) throw new IllegalArgumentException("DOCTOR_NOT_WORKING");
 
-        // Check if the appointment time is within working hours
         LocalTime appointmentTime = r.appointmentTime().toLocalTime();
-        if (appointmentTime.isBefore(schedule.getStartTime()) || appointmentTime.isAfter(schedule.getEndTime())) {
+        if (appointmentTime.isBefore(schedule.getStartTime()) || appointmentTime.isAfter(schedule.getEndTime()))
             throw new IllegalArgumentException("APPT_OUTSIDE_WORKING_HOURS");
-        }
 
-        // Check if appointment is during lunch break for full-day shifts
         if (schedule.getShiftType() == ShiftType.FULL_DAY) {
             LocalTime appointmentEndTime = appointmentTime.plusMinutes(schedule.getAppointmentDurationMinutes());
-            if ((appointmentTime.isAfter(LUNCH_BREAK_START) && appointmentTime.isBefore(LUNCH_BREAK_END)) ||
-                (appointmentEndTime.isAfter(LUNCH_BREAK_START) && appointmentEndTime.isBefore(LUNCH_BREAK_END))) {
+            if ((appointmentTime.isAfter(AppointmentService.LUNCH_BREAK_START) && appointmentTime.isBefore(AppointmentService.LUNCH_BREAK_END)) ||
+                    (appointmentEndTime.isAfter(AppointmentService.LUNCH_BREAK_START) && appointmentEndTime.isBefore(AppointmentService.LUNCH_BREAK_END)))
                 throw new IllegalArgumentException("APPT_DURING_LUNCH_BREAK");
-            }
         }
 
         if (repo.existsByDoctorIdAndAppointmentTime(r.doctorId(), r.appointmentTime()))
@@ -78,7 +69,6 @@ public class AppointmentService {
         return a.getId();
     }
 
-    /* --- QUERIES --- */
     @Transactional(readOnly = true)
     public List<AppointmentPatientView> findByPatient(UUID patientId) {
         return repo.findByPatientId(patientId).stream().map(mapper::toPatientView).toList();
@@ -89,44 +79,34 @@ public class AppointmentService {
         return repo.findByDoctorId(doctorId).stream().map(mapper::toDoctorView).toList();
     }
 
-    /* --- STATUS UPDATE --- */
     public void updateStatus(UUID id, AppointmentStatus status) {
         var appt = repo.findById(id).orElseThrow(() -> new IllegalArgumentException("APPT_NOT_FOUND"));
         appt.setStatus(status);
         appt.setUpdatedAt(LocalDateTime.now());
     }
 
-    /* --- NOTE --- */
     public void addNote(UUID id, String note) {
         var appt = repo.findById(id).orElseThrow(() -> new IllegalArgumentException("APPT_NOT_FOUND"));
         appt.setNote(note);
         appt.setUpdatedAt(LocalDateTime.now());
     }
 
-    /* --- RESCHEDULE --- */
     public void reschedule(UUID id, LocalDateTime newTime) {
         var appt = repo.findById(id).orElseThrow(() -> new IllegalArgumentException("APPT_NOT_FOUND"));
         if (newTime.isBefore(LocalDateTime.now())) throw new IllegalArgumentException("APPT_PAST_DATE");
 
-        // Check if the doctor works on this day
         DoctorSchedule schedule = scheduleRepo.findByDoctorIdAndDayOfWeek(appt.getDoctor().getId(), newTime.getDayOfWeek());
-        if (schedule == null || !schedule.isWorkingDay()) {
-            throw new IllegalArgumentException("DOCTOR_NOT_WORKING");
-        }
+        if (schedule == null || !schedule.isWorkingDay()) throw new IllegalArgumentException("DOCTOR_NOT_WORKING");
 
-        // Check if the appointment time is within working hours
         LocalTime appointmentTime = newTime.toLocalTime();
-        if (appointmentTime.isBefore(schedule.getStartTime()) || appointmentTime.isAfter(schedule.getEndTime())) {
+        if (appointmentTime.isBefore(schedule.getStartTime()) || appointmentTime.isAfter(schedule.getEndTime()))
             throw new IllegalArgumentException("APPT_OUTSIDE_WORKING_HOURS");
-        }
 
-        // Check if appointment is during lunch break for full-day shifts
         if (schedule.getShiftType() == ShiftType.FULL_DAY) {
             LocalTime appointmentEndTime = appointmentTime.plusMinutes(schedule.getAppointmentDurationMinutes());
-            if ((appointmentTime.isAfter(LUNCH_BREAK_START) && appointmentTime.isBefore(LUNCH_BREAK_END)) ||
-                (appointmentEndTime.isAfter(LUNCH_BREAK_START) && appointmentEndTime.isBefore(LUNCH_BREAK_END))) {
+            if ((appointmentTime.isAfter(AppointmentService.LUNCH_BREAK_START) && appointmentTime.isBefore(AppointmentService.LUNCH_BREAK_END)) ||
+                    (appointmentEndTime.isAfter(AppointmentService.LUNCH_BREAK_START) && appointmentEndTime.isBefore(AppointmentService.LUNCH_BREAK_END)))
                 throw new IllegalArgumentException("APPT_DURING_LUNCH_BREAK");
-            }
         }
 
         if (repo.existsByDoctorIdAndAppointmentTime(appt.getDoctor().getId(), newTime))
@@ -137,61 +117,28 @@ public class AppointmentService {
         appt.setStatus(AppointmentStatus.PENDING);
     }
 
-    /* --- DELETE --- */
     public void delete(UUID id) {
         if (!repo.existsById(id)) throw new IllegalArgumentException("APPT_NOT_FOUND");
         repo.deleteById(id);
     }
 
-    /* --- GET BOOKED SLOTS --- */
     @Transactional(readOnly = true)
     public List<String> getBookedTimeSlots(UUID doctorId, LocalDateTime date) {
-        // Convert UTC date to local date using system default timezone
         LocalDateTime localDate = date.atZone(java.time.ZoneOffset.UTC)
-            .withZoneSameInstant(java.time.ZoneId.systemDefault())
-            .toLocalDateTime();
-            
-        System.out.println("=== Booked Time Slots Debug ===");
-        System.out.println("Input date (UTC): " + date);
-        System.out.println("Local date: " + localDate);
-        System.out.println("Local day of week: " + localDate.getDayOfWeek());
-        
-        // Check if the doctor works on this day
-        DoctorSchedule schedule = scheduleRepo.findByDoctorIdAndDayOfWeek(doctorId, localDate.getDayOfWeek());
-        System.out.println("Doctor schedule for " + localDate.getDayOfWeek() + ": " + schedule);
-        
-        if (schedule == null || !schedule.isWorkingDay()) {
-            System.out.println("Doctor is not working on this day");
-            throw new IllegalArgumentException("DOCTOR_NOT_WORKING");
-        }
+                .withZoneSameInstant(java.time.ZoneId.systemDefault())
+                .toLocalDateTime();
 
-        // Get start and end of the day based on doctor's schedule
+        DoctorSchedule schedule = scheduleRepo.findByDoctorIdAndDayOfWeek(doctorId, localDate.getDayOfWeek());
+
+        if (schedule == null || !schedule.isWorkingDay()) throw new IllegalArgumentException("DOCTOR_NOT_WORKING");
+
         LocalDateTime startOfDay = localDate.toLocalDate().atTime(schedule.getStartTime());
         LocalDateTime endOfDay = localDate.toLocalDate().atTime(schedule.getEndTime());
-        System.out.println("Checking appointments between " + startOfDay + " and " + endOfDay);
 
-        // Get all appointments for the doctor on the given date
         List<Appointment> appointments = repo.findByDoctorIdAndDateRange(doctorId, startOfDay, endOfDay);
-        System.out.println("Found " + appointments.size() + " appointments for this time range");
-        
-        if (appointments.isEmpty()) {
-            System.out.println("No appointments found for this date");
-        } else {
-            System.out.println("Appointments found:");
-            appointments.forEach(appt -> {
-                System.out.println("  - Appointment: " + appt.getAppointmentTime() + 
-                    ", Status: " + appt.getStatus() + 
-                    ", Patient: " + appt.getPatient().getFirstName() + " " + appt.getPatient().getLastName());
-            });
-        }
 
-        // Convert appointment times to time slot strings (HH:mm format)
-        List<String> bookedSlots = appointments.stream()
+        return appointments.stream()
                 .map(appointment -> appointment.getAppointmentTime().toLocalTime().toString().substring(0, 5))
                 .toList();
-        System.out.println("Booked slots (HH:mm format): " + bookedSlots);
-        System.out.println("=== End Debug ===");
-        
-        return bookedSlots;
     }
 }
