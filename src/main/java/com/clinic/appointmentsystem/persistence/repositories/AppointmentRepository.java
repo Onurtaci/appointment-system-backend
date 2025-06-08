@@ -23,12 +23,12 @@ public interface AppointmentRepository extends JpaRepository<Appointment, UUID> 
     List<Appointment> findByDoctorIdAndStatus(@Param("doctorId") UUID doctorId, @Param("status") AppointmentStatus status);
 
     @Query("SELECT a FROM Appointment a LEFT JOIN FETCH a.patient LEFT JOIN FETCH a.doctor " +
-           "WHERE a.doctor.id = :doctorId " +
-           "AND a.appointmentTime BETWEEN :startDate AND :endDate " +
-           "AND a.status != 'REJECTED'")
+            "WHERE a.doctor.id = :doctorId " +
+            "AND a.appointmentTime BETWEEN :startDate AND :endDate " +
+            "AND a.status != 'REJECTED'")
     List<Appointment> findByDoctorIdAndDateRange(
-        @Param("doctorId") UUID doctorId,
-        @Param("startDate") LocalDateTime startDate,
-        @Param("endDate") LocalDateTime endDate
+            @Param("doctorId") UUID doctorId,
+            @Param("startDate") LocalDateTime startDate,
+            @Param("endDate") LocalDateTime endDate
     );
 }

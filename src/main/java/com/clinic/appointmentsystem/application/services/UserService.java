@@ -35,7 +35,6 @@ public class UserService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new EntityNotFoundException("User not found"));
 
-        // Check if email is already in use by another user
         if (!user.getEmail().equals(request.email())) {
             userRepository.findByEmail(request.email())
                     .ifPresent(existingUser -> {
@@ -46,7 +45,6 @@ public class UserService {
         }
 
         try {
-            // Update user fields
             user.setFirstName(request.firstName());
             user.setLastName(request.lastName());
             user.setEmail(request.email());
