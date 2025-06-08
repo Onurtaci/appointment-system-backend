@@ -1,5 +1,6 @@
 package com.clinic.appointmentsystem.domain.entities;
 
+import com.clinic.appointmentsystem.domain.enums.ShiftType;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -43,10 +44,4 @@ public class DoctorSchedule {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private ShiftType shiftType;
-
-    public enum ShiftType {
-        MORNING,
-        AFTERNOON,
-        FULL_DAY
-    }
 } 
