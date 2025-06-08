@@ -1,6 +1,6 @@
 package com.clinic.appointmentsystem.application.dto.schedule;
 
-import com.clinic.appointmentsystem.domain.entities.DoctorSchedule.ShiftType;
+import com.clinic.appointmentsystem.domain.enums.ShiftType;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;

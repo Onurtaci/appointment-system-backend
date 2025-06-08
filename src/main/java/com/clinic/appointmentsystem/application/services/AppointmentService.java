@@ -7,6 +7,7 @@ import com.clinic.appointmentsystem.application.mapper.AppointmentMapper;
 import com.clinic.appointmentsystem.domain.entities.Appointment;
 import com.clinic.appointmentsystem.domain.entities.DoctorSchedule;
 import com.clinic.appointmentsystem.domain.enums.AppointmentStatus;
+import com.clinic.appointmentsystem.domain.enums.ShiftType;
 import com.clinic.appointmentsystem.persistence.repositories.AppointmentRepository;
 import com.clinic.appointmentsystem.persistence.repositories.DoctorScheduleRepository;
 import com.clinic.appointmentsystem.persistence.repositories.UserRepository;
@@ -50,7 +51,7 @@ public class AppointmentService {
         }
 
         // Check if appointment is during lunch break for full-day shifts
-        if (schedule.getShiftType() == DoctorSchedule.ShiftType.FULL_DAY) {
+        if (schedule.getShiftType() == ShiftType.FULL_DAY) {
             LocalTime appointmentEndTime = appointmentTime.plusMinutes(schedule.getAppointmentDurationMinutes());
             if ((appointmentTime.isAfter(LUNCH_BREAK_START) && appointmentTime.isBefore(LUNCH_BREAK_END)) ||
                 (appointmentEndTime.isAfter(LUNCH_BREAK_START) && appointmentEndTime.isBefore(LUNCH_BREAK_END))) {
@@ -120,7 +121,7 @@ public class AppointmentService {
         }
 
         // Check if appointment is during lunch break for full-day shifts
-        if (schedule.getShiftType() == DoctorSchedule.ShiftType.FULL_DAY) {
+        if (schedule.getShiftType() == ShiftType.FULL_DAY) {
             LocalTime appointmentEndTime = appointmentTime.plusMinutes(schedule.getAppointmentDurationMinutes());
             if ((appointmentTime.isAfter(LUNCH_BREAK_START) && appointmentTime.isBefore(LUNCH_BREAK_END)) ||
                 (appointmentEndTime.isAfter(LUNCH_BREAK_START) && appointmentEndTime.isBefore(LUNCH_BREAK_END))) {

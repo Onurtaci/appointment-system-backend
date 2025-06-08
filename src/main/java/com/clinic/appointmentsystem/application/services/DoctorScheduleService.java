@@ -4,8 +4,7 @@ import com.clinic.appointmentsystem.application.dto.schedule.CreateScheduleReque
 import com.clinic.appointmentsystem.application.dto.schedule.ScheduleView;
 import com.clinic.appointmentsystem.application.mapper.ScheduleMapper;
 import com.clinic.appointmentsystem.domain.entities.DoctorSchedule;
-import com.clinic.appointmentsystem.domain.entities.DoctorSchedule.ShiftType;
-import com.clinic.appointmentsystem.domain.entities.User;
+import com.clinic.appointmentsystem.domain.enums.ShiftType;
 import com.clinic.appointmentsystem.persistence.repositories.DoctorScheduleRepository;
 import com.clinic.appointmentsystem.persistence.repositories.UserRepository;
 import lombok.RequiredArgsConstructor;
