@@ -1,16 +1,23 @@
 package com.clinic.appointmentsystem.application.dto.appointment;
 
+import com.clinic.appointmentsystem.application.dto.user.UserDto;
 import com.clinic.appointmentsystem.domain.enums.AppointmentStatus;
 
 import java.time.LocalDateTime;
-import java.util.UUID;
 
+/**
+ * AppointmentDoctorView - Doktor için randevu görünüm DTO'su
+ * 
+ * Bu DTO doktorların randevularını görüntülemek için kullanılır.
+ * Hasta bilgileri, randevu zamanı ve durumu bilgilerini içerir.
+ */
 public record AppointmentDoctorView(
-        UUID id,
-        UUID patientId,
-        String patientName,
+        String id,
+        UserDto patient,
         LocalDateTime appointmentTime,
         AppointmentStatus status,
-        String note
+        String note,
+        LocalDateTime createdAt,
+        LocalDateTime updatedAt
 ) {
 }

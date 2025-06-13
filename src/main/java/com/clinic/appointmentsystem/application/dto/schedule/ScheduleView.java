@@ -1,17 +1,22 @@
 package com.clinic.appointmentsystem.application.dto.schedule;
 
+import com.clinic.appointmentsystem.application.dto.user.UserDto;
 import com.clinic.appointmentsystem.domain.enums.ShiftType;
 
 import java.time.DayOfWeek;
-import java.time.LocalTime;
-import java.util.UUID;
 
+/**
+ * ScheduleView - Doktor çalışma programı görünüm DTO'su
+ * 
+ * Bu DTO doktor çalışma programı bilgilerini frontend'e döndürmek için kullanılır.
+ * Doktor bilgileri, çalışma saatleri ve randevu süresi bilgilerini içerir.
+ */
 public record ScheduleView(
-        UUID id,
-        UUID doctorId,
+        String id,
+        UserDto doctor,
         DayOfWeek dayOfWeek,
-        LocalTime startTime,
-        LocalTime endTime,
+        String startTime,
+        String endTime,
         boolean isWorkingDay,
         Integer appointmentDurationMinutes,
         ShiftType shiftType
