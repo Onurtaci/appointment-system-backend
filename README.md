@@ -1,179 +1,124 @@
-# Randevu ve Hasta Takip Sistemi
+# Appointment System - Backend API
 
-Bu proje, Ege Üniversitesi Mühendislik Fakültesi Bilgisayar Mühendisliği Bölümü Back-End Software Development dersi için geliştirilmiş bir randevu ve hasta takip sistemidir.
+A Spring Boot REST API for managing medical appointments between doctors and patients.
 
-## 🚀 Özellikler
+## Features
 
-### Kullanıcı Rolleri
-- **Hasta**: Kayıt olur, giriş yapar, randevu alır, geçmiş randevularını görür
-- **Doktor**: Giriş yapar, kendisine gelen randevuları görür, onaylar veya reddeder, not ekler
+### User Management
+- User registration and authentication (JWT)
+- Role-based authorization (PATIENT, DOCTOR)
+- Secure password hashing with BCrypt
 
-### Randevu Sistemi
-- ✅ Randevu tarihi ve saati seçimi
-- ✅ Aynı saatte çakışan randevuların engellenmesi
-- ✅ Randevu durumları: Beklemede, Onaylandı, Reddedildi
-- ✅ **Gelişmiş randevu süresi yönetimi** (15-120 dakika arası, 15 dakikalık katları)
-- ✅ **Otomatik müsait saat hesaplama**
-- ✅ **Gelişmiş çakışma kontrolü**
+### Appointment Management
+- Create, update, and manage appointments
+- Conflict detection for overlapping appointments
+- Appointment status management (PENDING, APPROVED, REJECTED)
+- Flexible appointment duration (15-120 minutes in 15-minute increments)
+- Automatic available time slot calculation
 
-### Hasta Takibi
-- ✅ Doktorlar randevulara özel not ekleyebilir
-- ✅ Hasta geçmiş randevularını ve doktor notlarını görebilir
-- ✅ **Gelişmiş hasta geçmişi takibi**
+### Doctor Schedule Management
+- Flexible working hours (Morning, Afternoon, Full Day shifts)
+- Automatic lunch break handling (12:00-13:00)
+- Weekly schedule management
+- Available time slot calculation algorithm
+- Schedule summary endpoints
 
-### Doktor Çalışma Saatleri Yönetimi
-- ✅ **Esnek çalışma saatleri** (Sabah, Öğleden Sonra, Tam Gün vardiyaları)
-- ✅ **Öğle arası otomatik kontrolü** (12:00-13:00)
-- ✅ **Haftalık çalışma programı yönetimi**
-- ✅ **Müsait saat hesaplama algoritması**
-- ✅ **Çalışma programı özeti**
+### Patient Tracking
+- Doctors can add notes to appointments
+- Patients can view appointment history and doctor notes
+- Enhanced patient history tracking
 
-### Güvenlik ve Kimlik Doğrulama
-- ✅ JWT tabanlı kimlik doğrulama
-- ✅ Rol tabanlı yetkilendirme (PATIENT, DOCTOR)
-- ✅ Şifre hash'leme (BCrypt)
+## Tech Stack
 
-## 🛠️ Teknolojiler
-
-### Backend
-- **Spring Boot 3.2.3** - Ana framework
-- **Spring Security** - Güvenlik ve kimlik doğrulama
-- **Spring Data JPA** - Veritabanı erişimi
-- **PostgreSQL** - Veritabanı
-- **Flyway** - Veritabanı migration yönetimi
+- **Spring Boot 3.2.3** - Main framework
+- **Spring Security** - Security and authentication
+- **Spring Data JPA** - Database access
+- **PostgreSQL** - Database
+- **Flyway** - Database migration management
 - **MapStruct** - DTO mapping
-- **Lombok** - Kod kısaltma
-- **JWT** - Token tabanlı kimlik doğrulama
+- **Lombok** - Code reduction
+- **JWT** - Token-based authentication
 
-### Frontend
-- **React 18** - UI framework
-- **TypeScript** - Tip güvenliği
-- **Material-UI** - UI bileşenleri
-- **Redux Toolkit** - State management
-- **React Router** - Sayfa yönlendirme
-- **Axios** - HTTP istekleri
-- **Formik & Yup** - Form yönetimi ve validasyon
-
-## 📋 Gereksinimler
+## Prerequisites
 
 - Java 17+
-- Node.js 18+
 - PostgreSQL 14+
 - Maven 3.8+
 
-## 🚀 Kurulum
+## Installation
 
-### 1. Veritabanı Kurulumu
+### 1. Database Setup
 
 ```sql
--- PostgreSQL'de veritabanı oluştur
+-- Create database in PostgreSQL
 CREATE DATABASE clinic_db;
 CREATE USER clinic WITH PASSWORD 'clinic123';
 GRANT ALL PRIVILEGES ON DATABASE clinic_db TO clinic;
 ```
 
-### 2. Backend Kurulumu
+### 2. Application Setup
 
 ```bash
-cd AppointmentSystem
-
-# Bağımlılıkları yükle
+# Install dependencies
 mvn clean install
 
-# Veritabanı migration'larını çalıştır
+# Run database migrations
 mvn flyway:migrate
 
-# Uygulamayı başlat
+# Start the application
 mvn spring-boot:run
 ```
 
-Backend `http://localhost:8080` adresinde çalışacaktır.
+The API will be available at `http://localhost:8080`
 
-### 3. Frontend Kurulumu
+## API Documentation
 
-```bash
-cd AppointmentSystemUI
+Once the application is running, access Swagger UI at `http://localhost:8080/swagger-ui.html`
 
-# Bağımlılıkları yükle
-npm install
+### Main Endpoints
 
-# Geliştirme sunucusunu başlat
-npm run dev
-```
+#### Authentication
+- `POST /api/auth/register` - User registration
+- `POST /api/auth/login` - User login
+- `GET /api/auth/me` - Current user information
 
-Frontend `http://localhost:3001` adresinde çalışacaktır.
+#### Appointment Management
+- `POST /api/appointments` - Create new appointment
+- `GET /api/appointments/me` - Patient appointments
+- `GET /api/appointments/doctor/me` - Doctor appointments
+- `PATCH /api/appointments/{id}/status` - Update appointment status
+- `POST /api/appointments/{id}/notes` - Add notes to appointment
+- `GET /api/appointments/available-slots` - Get available time slots
 
-## 📚 API Dokümantasyonu
+#### Doctor Schedule Management
+- `POST /api/doctor-schedules/{doctorId}` - Create schedule
+- `GET /api/doctor-schedules/{doctorId}` - List schedules
+- `PUT /api/doctor-schedules/{doctorId}/{scheduleId}` - Update schedule
+- `DELETE /api/doctor-schedules/{doctorId}/{scheduleId}` - Delete schedule
+- `GET /api/doctor-schedules/{doctorId}/available-slots` - Get available slots
+- `GET /api/doctor-schedules/{doctorId}/availability` - Check availability
+- `GET /api/doctor-schedules/{doctorId}/weekly-summary` - Weekly summary
 
-Uygulama çalıştıktan sonra Swagger UI'a `http://localhost:8080/swagger-ui.html` adresinden erişebilirsiniz.
-
-### Ana Endpoint'ler
-
-#### Kimlik Doğrulama
-- `POST /api/auth/register` - Kullanıcı kaydı
-- `POST /api/auth/login` - Kullanıcı girişi
-- `GET /api/auth/me` - Mevcut kullanıcı bilgileri
-
-#### Randevu Yönetimi
-- `POST /api/appointments` - Yeni randevu oluşturma
-- `GET /api/appointments/me` - Hasta randevuları
-- `GET /api/appointments/doctor/me` - Doktor randevuları
-- `PATCH /api/appointments/{id}/status` - Randevu durumu güncelleme
-- `POST /api/appointments/{id}/notes` - Randevuya not ekleme
-- `GET /api/appointments/available-slots` - Müsait saatler
-
-#### Doktor Çalışma Programı
-- `POST /api/doctor-schedules/{doctorId}` - Çalışma programı oluşturma
-- `GET /api/doctor-schedules/{doctorId}` - Çalışma programı listesi
-- `PUT /api/doctor-schedules/{doctorId}/{scheduleId}` - Program güncelleme
-- `DELETE /api/doctor-schedules/{doctorId}/{scheduleId}` - Program silme
-- `GET /api/doctor-schedules/{doctorId}/available-slots` - Müsait saatler
-- `GET /api/doctor-schedules/{doctorId}/availability` - Müsaitlik kontrolü
-- `GET /api/doctor-schedules/{doctorId}/weekly-summary` - Haftalık özet
-
-## 🧪 Test
-
-```bash
-# Backend testleri
-cd AppointmentSystem
-mvn test
-
-# Frontend testleri
-cd AppointmentSystemUI
-npm test
-```
-
-## 📁 Proje Yapısı
+## Project Structure
 
 ```
-AppointmentSystem/
-├── src/
-│   ├── main/
-│   │   ├── java/com/clinic/appointmentsystem/
-│   │   │   ├── domain/           # İş mantığı varlıkları
-│   │   │   ├── application/      # Uygulama servisleri
-│   │   │   ├── persistence/      # Veri erişim katmanı
-│   │   │   ├── webapi/           # REST API controller'ları
-│   │   │   └── infrastructure/   # Altyapı bileşenleri
-│   │   └── resources/
-│   │       ├── db/migration/     # Veritabanı migration'ları
-│   │       └── application.yaml  # Konfigürasyon
-│   └── test/                     # Test dosyaları
-└── pom.xml
-
-AppointmentSystemUI/
-├── src/
-│   ├── components/               # React bileşenleri
-│   ├── pages/                    # Sayfa bileşenleri
-│   ├── services/                 # API servisleri
-│   ├── store/                    # Redux store
-│   └── types/                    # TypeScript tipleri
-└── package.json
+src/
+├── main/
+│   ├── java/com/clinic/appointmentsystem/
+│   │   ├── domain/           # Business logic entities
+│   │   ├── application/      # Application services
+│   │   ├── persistence/      # Data access layer
+│   │   ├── webapi/           # REST API controllers
+│   │   └── infrastructure/   # Infrastructure components
+│   └── resources/
+│       ├── db/migration/     # Database migrations
+│       └── application.yaml  # Configuration
+└── test/                     # Test files
 ```
 
-## 🔧 Konfigürasyon
+## Configuration
 
-### Backend Konfigürasyonu (`application.yaml`)
+### Application Configuration (`application.yaml`)
 
 ```yaml
 server:
@@ -191,78 +136,16 @@ spring:
 
 jwt:
   secret: your-secret-key-here
-  expiration: 3600000  # 1 saat
+  expiration: 3600000  # 1 hour
 ```
 
-### Frontend Konfigürasyonu
-
-API base URL'ini `src/services/api.ts` dosyasında değiştirebilirsiniz.
-
-## 🚀 Deployment
-
-### Backend Deployment
+## Testing
 
 ```bash
-# JAR dosyası oluştur
-mvn clean package
-
-# JAR dosyasını çalıştır
-java -jar target/appointment-system-0.0.1-SNAPSHOT.jar
+# Run tests
+mvn test
 ```
 
-### Frontend Deployment
+## License
 
-```bash
-# Production build
-npm run build
-
-# Build dosyalarını web sunucusuna kopyala
-```
-
-## 📝 Geliştirici Notları
-
-### Yeni Özellikler (v2.0)
-
-1. **Gelişmiş Randevu Süresi Yönetimi**
-   - 15-120 dakika arası esnek randevu süreleri
-   - 15 dakikalık katları zorunluluğu
-   - Otomatik süre validasyonu
-
-2. **Akıllı Müsait Saat Hesaplama**
-   - Doktor çalışma saatlerine göre otomatik hesaplama
-   - Öğle arası otomatik çıkarılması
-   - Çakışan randevuların otomatik filtrelenmesi
-
-3. **Gelişmiş Çalışma Programı Yönetimi**
-   - Haftalık program özeti
-   - Müsaitlik kontrolü
-   - Esnek vardiya sistemi
-
-### Kod Kalitesi
-
-- **Clean Architecture** prensipleri uygulanmıştır
-- **SOLID** prensipleri takip edilmiştir
-- **Comprehensive testing** ile test coverage sağlanmıştır
-- **Detailed documentation** ile kod dokümantasyonu yapılmıştır
-
-## 🤝 Katkıda Bulunma
-
-1. Fork yapın
-2. Feature branch oluşturun (`git checkout -b feature/amazing-feature`)
-3. Commit yapın (`git commit -m 'Add some amazing feature'`)
-4. Push yapın (`git push origin feature/amazing-feature`)
-5. Pull Request oluşturun
-
-## 📄 Lisans
-
-Bu proje eğitim amaçlı geliştirilmiştir.
-
-## 👥 Geliştirici
-
-- **Ege Üniversitesi Mühendislik Fakültesi**
-- **Bilgisayar Mühendisliği Bölümü**
-- **Back-End Software Development Dersi**
-
----
-
-**Proje Teslim Tarihi**: 18 Haziran 2025 
+This project is licensed under the MIT License. 
