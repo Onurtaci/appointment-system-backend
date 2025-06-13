@@ -9,15 +9,54 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
+/**
+ * AppointmentRepository - Randevu veri erişim katmanı
+ * 
+ * Bu repository randevu verilerinin veritabanı işlemlerini yönetir.
+ * Randevu oluşturma, güncelleme, silme ve çeşitli kriterlere göre listeleme işlemlerini sağlar.
+ * Gelişmiş çakışma kontrolü ve zaman aralığı sorguları içerir.
+ */
 public interface AppointmentRepository extends JpaRepository<Appointment, UUID> {
+    
+    /**
+     * Belirli bir doktorun belirli bir saatte randevusu olup olmadığını kontrol eder
+     * 
+     * @param doctorId Doktor ID'si
+     * @param appointmentTime Randevu zamanı
+     * @return Randevu varsa true, yoksa false
+     */
     boolean existsByDoctorIdAndAppointmentTime(UUID doctorId, LocalDateTime appointmentTime);
 
+    /**
+     * Belirli bir hastanın tüm randevularını getirir
+     * Hasta ve doktor bilgileriyle birlikte (LEFT JOIN FETCH)
+     * 
+     * @param patientId Hasta ID'si
+     * @return Hasta randevularının listesi
+     */
     @Query("SELECT a FROM Appointment a LEFT JOIN FETCH a.patient LEFT JOIN FETCH a.doctor WHERE a.patient.id = :patientId")
     List<Appointment> findByPatientId(@Param("patientId") UUID patientId);
 
+    /**
+     * Belirli bir doktorun tüm randevularını getirir
+     * Hasta ve doktor bilgileriyle birlikte (LEFT JOIN FETCH)
+     * 
+     * @param doctorId Doktor ID'si
+     * @return Doktor randevularının listesi
+     */
     @Query("SELECT a FROM Appointment a LEFT JOIN FETCH a.patient LEFT JOIN FETCH a.doctor WHERE a.doctor.id = :doctorId")
     List<Appointment> findByDoctorId(@Param("doctorId") UUID doctorId);
 
+    /**
+     * Belirli bir doktorun belirli tarih aralığındaki randevularını getirir
+     * Reddedilmiş randevular hariç tutulur
+     * Hasta ve doktor bilgileriyle birlikte (LEFT JOIN FETCH)
+     * 
+     * @param doctorId Doktor ID'si
+     * @param startDate Başlangıç tarihi
+     * @param endDate Bitiş tarihi
+     * @return Tarih aralığındaki randevuların listesi
+     */
     @Query("SELECT a FROM Appointment a LEFT JOIN FETCH a.patient LEFT JOIN FETCH a.doctor " +
             "WHERE a.doctor.id = :doctorId " +
             "AND a.appointmentTime BETWEEN :startDate AND :endDate " +
@@ -26,5 +65,49 @@ public interface AppointmentRepository extends JpaRepository<Appointment, UUID> 
             @Param("doctorId") UUID doctorId,
             @Param("startDate") LocalDateTime startDate,
             @Param("endDate") LocalDateTime endDate
+    );
+
+    /**
+     * Belirli bir doktorun belirli zaman aralığında randevu çakışması olup olmadığını kontrol eder
+     * 
+     * @param doctorId Doktor ID'si
+     * @param startTime Başlangıç zamanı
+     * @param endTime Bitiş zamanı
+     * @return Çakışma varsa true, yoksa false
+     */
+    @Query("SELECT COUNT(a) > 0 FROM Appointment a " +
+            "WHERE a.doctor.id = :doctorId " +
+            "AND a.status != 'REJECTED' " +
+            "AND ((a.appointmentTime >= :startTime AND a.appointmentTime < :endTime) " +
+            "OR (a.appointmentTime <= :startTime AND a.appointmentTime + INTERVAL '1 minute' * :durationMinutes > :startTime))")
+    boolean existsByDoctorIdAndTimeRange(
+            @Param("doctorId") UUID doctorId,
+            @Param("startTime") LocalDateTime startTime,
+            @Param("endTime") LocalDateTime endTime,
+            @Param("durationMinutes") int durationMinutes
+    );
+
+    /**
+     * Belirli bir doktorun belirli zaman aralığında randevu çakışması olup olmadığını kontrol eder
+     * Belirli bir randevu hariç tutulur (yeniden planlama için)
+     * 
+     * @param doctorId Doktor ID'si
+     * @param startTime Başlangıç zamanı
+     * @param endTime Bitiş zamanı
+     * @param excludeAppointmentId Hariç tutulacak randevu ID'si
+     * @return Çakışma varsa true, yoksa false
+     */
+    @Query("SELECT COUNT(a) > 0 FROM Appointment a " +
+            "WHERE a.doctor.id = :doctorId " +
+            "AND a.id != :excludeAppointmentId " +
+            "AND a.status != 'REJECTED' " +
+            "AND ((a.appointmentTime >= :startTime AND a.appointmentTime < :endTime) " +
+            "OR (a.appointmentTime <= :startTime AND a.appointmentTime + INTERVAL '1 minute' * :durationMinutes > :startTime))")
+    boolean existsByDoctorIdAndTimeRangeExcludingAppointment(
+            @Param("doctorId") UUID doctorId,
+            @Param("startTime") LocalDateTime startTime,
+            @Param("endTime") LocalDateTime endTime,
+            @Param("durationMinutes") int durationMinutes,
+            @Param("excludeAppointmentId") UUID excludeAppointmentId
     );
 }

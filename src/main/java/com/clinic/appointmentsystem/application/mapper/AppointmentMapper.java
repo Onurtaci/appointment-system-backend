@@ -6,14 +6,30 @@ import com.clinic.appointmentsystem.domain.entities.Appointment;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
-@Mapper(componentModel = "spring")
+/**
+ * AppointmentMapper - Randevu dönüştürücü
+ * 
+ * Bu mapper Appointment entity'sini çeşitli DTO'lara dönüştürür.
+ * Doktor ve hasta görünümleri için farklı mapping'ler sağlar.
+ */
+@Mapper(componentModel = "spring", uses = {UserMapper.class})
 public interface AppointmentMapper {
-    @Mapping(target = "doctorId", source = "doctor.id")
-    @Mapping(target = "doctorName", expression = "java(a.getDoctor().getFirstName() + \" \" + a.getDoctor().getLastName())")
+    
+    @Mapping(target = "id", expression = "java(appointment.getId().toString())")
+    @Mapping(target = "doctor", source = "doctor")
+    @Mapping(target = "appointmentTime", source = "appointmentTime")
+    @Mapping(target = "status", source = "status")
     @Mapping(target = "note", source = "note")
-    AppointmentPatientView toPatientView(Appointment a);
+    @Mapping(target = "createdAt", source = "createdAt")
+    @Mapping(target = "updatedAt", source = "updatedAt")
+    AppointmentPatientView toPatientView(Appointment appointment);
 
-    @Mapping(target = "patientId", source = "patient.id")
-    @Mapping(target = "patientName", expression = "java(a.getPatient().getFirstName() + \" \" + a.getPatient().getLastName())")
-    AppointmentDoctorView toDoctorView(Appointment a);
+    @Mapping(target = "id", expression = "java(appointment.getId().toString())")
+    @Mapping(target = "patient", source = "patient")
+    @Mapping(target = "appointmentTime", source = "appointmentTime")
+    @Mapping(target = "status", source = "status")
+    @Mapping(target = "note", source = "note")
+    @Mapping(target = "createdAt", source = "createdAt")
+    @Mapping(target = "updatedAt", source = "updatedAt")
+    AppointmentDoctorView toDoctorView(Appointment appointment);
 }
