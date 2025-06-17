@@ -1,21 +1,5 @@
 package com.clinic.appointmentsystem.application.services;
 
-import com.clinic.appointmentsystem.application.dto.appointment.AppointmentDoctorView;
-import com.clinic.appointmentsystem.application.dto.appointment.AppointmentPatientView;
-import com.clinic.appointmentsystem.application.dto.appointment.CreateAppointmentRequest;
-import com.clinic.appointmentsystem.application.mapper.AppointmentMapper;
-import com.clinic.appointmentsystem.domain.entities.Appointment;
-import com.clinic.appointmentsystem.domain.entities.DoctorSchedule;
-import com.clinic.appointmentsystem.domain.entities.User;
-import com.clinic.appointmentsystem.domain.enums.AppointmentStatus;
-import com.clinic.appointmentsystem.domain.enums.ShiftType;
-import com.clinic.appointmentsystem.persistence.repositories.AppointmentRepository;
-import com.clinic.appointmentsystem.persistence.repositories.DoctorScheduleRepository;
-import com.clinic.appointmentsystem.persistence.repositories.UserRepository;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -23,6 +7,23 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.clinic.appointmentsystem.application.dto.appointment.AppointmentDoctorView;
+import com.clinic.appointmentsystem.application.dto.appointment.AppointmentPatientView;
+import com.clinic.appointmentsystem.application.dto.appointment.CreateAppointmentRequest;
+import com.clinic.appointmentsystem.application.mapper.AppointmentMapper;
+import com.clinic.appointmentsystem.domain.entities.Appointment;
+import com.clinic.appointmentsystem.domain.entities.DoctorSchedule;
+import com.clinic.appointmentsystem.domain.enums.AppointmentStatus;
+import com.clinic.appointmentsystem.domain.enums.ShiftType;
+import com.clinic.appointmentsystem.persistence.repositories.AppointmentRepository;
+import com.clinic.appointmentsystem.persistence.repositories.DoctorScheduleRepository;
+import com.clinic.appointmentsystem.persistence.repositories.UserRepository;
+
+import lombok.RequiredArgsConstructor;
 
 /**
  * AppointmentService - Randevu iş mantığı servisi
@@ -325,7 +326,7 @@ public class AppointmentService {
         LocalDateTime appointmentEndTime = appointmentTime.plusMinutes(durationMinutes);
         
         // Aynı zaman diliminde başka randevu var mı kontrol et
-        if (repo.existsByDoctorIdAndTimeRange(doctorId, appointmentTime, appointmentEndTime)) {
+        if (repo.existsByDoctorIdAndTimeRange(doctorId, appointmentTime, appointmentEndTime, durationMinutes)) {
             throw new IllegalStateException("APPT_TIME_SLOT_BOOKED");
         }
     }
@@ -343,7 +344,7 @@ public class AppointmentService {
         LocalDateTime appointmentEndTime = appointmentTime.plusMinutes(durationMinutes);
         
         // Aynı zaman diliminde başka randevu var mı kontrol et (kendi randevusu hariç)
-        if (repo.existsByDoctorIdAndTimeRangeExcludingAppointment(doctorId, appointmentTime, appointmentEndTime, excludeAppointmentId)) {
+        if (repo.existsByDoctorIdAndTimeRangeExcludingAppointment(doctorId, appointmentTime, appointmentEndTime, durationMinutes, excludeAppointmentId)) {
             throw new IllegalStateException("APPT_TIME_SLOT_BOOKED");
         }
     }
