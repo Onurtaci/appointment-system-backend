@@ -5,6 +5,7 @@ import com.clinic.appointmentsystem.application.dto.schedule.ScheduleView;
 import com.clinic.appointmentsystem.application.mapper.ScheduleMapper;
 import com.clinic.appointmentsystem.domain.entities.DoctorSchedule;
 import com.clinic.appointmentsystem.domain.enums.ShiftType;
+import com.clinic.appointmentsystem.persistence.repositories.AppointmentRepository;
 import com.clinic.appointmentsystem.persistence.repositories.DoctorScheduleRepository;
 import com.clinic.appointmentsystem.persistence.repositories.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -12,6 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -47,6 +49,8 @@ public class DoctorScheduleService {
 
     private final DoctorScheduleRepository repo;
     private final UserRepository userRepo;
+    private final ScheduleMapper scheduleMapper;
+    private final AppointmentRepository appointmentRepo;
 
     /**
      * Vardiya türüne göre başlangıç ve bitiş saatlerini ayarlar
@@ -108,9 +112,17 @@ public class DoctorScheduleService {
         DoctorScheduleService.setShiftTimes(schedule, request.shiftType());
 
         // Tam gün vardiyasında öğle arası çakışması kontrolü
-        if (request.shiftType() == ShiftType.FULL_DAY &&
-                repo.existsByDoctorIdAndTimeRange(doctorId, request.dayOfWeek(), DoctorScheduleService.LUNCH_BREAK_START, DoctorScheduleService.LUNCH_BREAK_END))
+        if (request.shiftType() == ShiftType.FULL_DAY) {
+            // Öğle arası için randevu çakışması kontrolü
+            // Bu kontrol için örnek bir tarih kullanıyoruz (bugünün tarihi)
+            LocalDate today = LocalDate.now();
+            LocalDateTime lunchStart = LocalDateTime.of(today, LUNCH_BREAK_START);
+            LocalDateTime lunchEnd = LocalDateTime.of(today, LUNCH_BREAK_END);
+            
+            if (appointmentRepo.existsByDoctorIdAndTimeRange(doctorId, lunchStart, lunchEnd, request.appointmentDurationMinutes())) {
             throw new IllegalStateException("EXISTING_APPOINTMENTS_DURING_LUNCH_BREAK");
+            }
+        }
 
         // Programı kaydet
         repo.save(schedule);
@@ -128,7 +140,7 @@ public class DoctorScheduleService {
         // Sadece çalışma günlerini getir
         var schedules = repo.findAllWorkingDaysByDoctorId(doctorId);
         return schedules.stream()
-                .map(ScheduleMapper::toView)
+                .map(scheduleMapper::toView)
                 .toList();
     }
 
@@ -158,9 +170,17 @@ public class DoctorScheduleService {
         validateAppointmentDuration(request.appointmentDurationMinutes());
 
         // Tam gün vardiyasında öğle arası çakışması kontrolü
-        if (request.shiftType() == ShiftType.FULL_DAY &&
-                repo.existsByDoctorIdAndTimeRange(doctorId, request.dayOfWeek(), DoctorScheduleService.LUNCH_BREAK_START, DoctorScheduleService.LUNCH_BREAK_END))
+        if (request.shiftType() == ShiftType.FULL_DAY) {
+            // Öğle arası için randevu çakışması kontrolü
+            // Bu kontrol için örnek bir tarih kullanıyoruz (bugünün tarihi)
+            LocalDate today = LocalDate.now();
+            LocalDateTime lunchStart = LocalDateTime.of(today, LUNCH_BREAK_START);
+            LocalDateTime lunchEnd = LocalDateTime.of(today, LUNCH_BREAK_END);
+            
+            if (appointmentRepo.existsByDoctorIdAndTimeRange(doctorId, lunchStart, lunchEnd, request.appointmentDurationMinutes())) {
             throw new IllegalStateException("EXISTING_APPOINTMENTS_DURING_LUNCH_BREAK");
+            }
+        }
 
         // Program bilgilerini güncelle
         schedule.setDayOfWeek(request.dayOfWeek());

@@ -1,7 +1,9 @@
 package com.clinic.appointmentsystem.webapi.exception;
 
-import jakarta.persistence.EntityNotFoundException;
-import jakarta.validation.ConstraintViolationException;
+import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Map;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
@@ -11,9 +13,8 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
-import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.Map;
+import jakarta.persistence.EntityNotFoundException;
+import jakarta.validation.ConstraintViolationException;
 
 @ControllerAdvice
 public class GlobalExceptionHandler {
@@ -70,6 +71,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
     static ResponseEntity<ApiError> typeMismatch(MethodArgumentTypeMismatchException ex) {
+        @SuppressWarnings("null")
         String message = String.format("Parameter '%s' should be of type %s", 
                 ex.getName(), ex.getRequiredType().getSimpleName());
         return ResponseEntity.badRequest()

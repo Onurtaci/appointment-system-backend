@@ -73,13 +73,15 @@ public interface AppointmentRepository extends JpaRepository<Appointment, UUID> 
      * @param doctorId Doktor ID'si
      * @param startTime Başlangıç zamanı
      * @param endTime Bitiş zamanı
+     * @param durationMinutes Randevu süresi (dakika)
      * @return Çakışma varsa true, yoksa false
      */
-    @Query("SELECT COUNT(a) > 0 FROM Appointment a " +
-            "WHERE a.doctor.id = :doctorId " +
+    @Query(value = "SELECT COUNT(*) > 0 FROM appointments a " +
+            "WHERE a.doctor_id = :doctorId " +
             "AND a.status != 'REJECTED' " +
-            "AND ((a.appointmentTime >= :startTime AND a.appointmentTime < :endTime) " +
-            "OR (a.appointmentTime <= :startTime AND a.appointmentTime + INTERVAL '1 minute' * :durationMinutes > :startTime))")
+            "AND ((a.appointment_time >= :startTime AND a.appointment_time < :endTime) " +
+            "OR (a.appointment_time <= :startTime AND a.appointment_time + INTERVAL '1 minute' * :durationMinutes > :startTime))",
+            nativeQuery = true)
     boolean existsByDoctorIdAndTimeRange(
             @Param("doctorId") UUID doctorId,
             @Param("startTime") LocalDateTime startTime,
@@ -94,15 +96,17 @@ public interface AppointmentRepository extends JpaRepository<Appointment, UUID> 
      * @param doctorId Doktor ID'si
      * @param startTime Başlangıç zamanı
      * @param endTime Bitiş zamanı
+     * @param durationMinutes Randevu süresi (dakika)
      * @param excludeAppointmentId Hariç tutulacak randevu ID'si
      * @return Çakışma varsa true, yoksa false
      */
-    @Query("SELECT COUNT(a) > 0 FROM Appointment a " +
-            "WHERE a.doctor.id = :doctorId " +
+    @Query(value = "SELECT COUNT(*) > 0 FROM appointments a " +
+            "WHERE a.doctor_id = :doctorId " +
             "AND a.id != :excludeAppointmentId " +
             "AND a.status != 'REJECTED' " +
-            "AND ((a.appointmentTime >= :startTime AND a.appointmentTime < :endTime) " +
-            "OR (a.appointmentTime <= :startTime AND a.appointmentTime + INTERVAL '1 minute' * :durationMinutes > :startTime))")
+            "AND ((a.appointment_time >= :startTime AND a.appointment_time < :endTime) " +
+            "OR (a.appointment_time <= :startTime AND a.appointment_time + INTERVAL '1 minute' * :durationMinutes > :startTime))",
+            nativeQuery = true)
     boolean existsByDoctorIdAndTimeRangeExcludingAppointment(
             @Param("doctorId") UUID doctorId,
             @Param("startTime") LocalDateTime startTime,
